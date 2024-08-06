@@ -173,7 +173,9 @@ vault write ssh/roles/ssh-user - << EOF
 EOF
 ```
 
-* Ask Vault to sign the public key and SSH into the container
+## SSH into the container
+
+* Ask Vault to sign the public key:
 
 With everything in place, you can now authenticate to Vault and ask it sign the public key we wish to use to auth to the SSH container:
 
@@ -181,6 +183,8 @@ With everything in place, you can now authenticate to Vault and ask it sign the 
 vault write -field=signed_key ssh/sign/ssh-user public_key=@./keys/id_rsa.pub > ./keys/id_rsa.cert
 chmod go-r ./keys/id_rsa.cert
 ```
+
+* SSH into the container
 
 We now specify our private key and signed public key as our credentials when SSHing to the container:
 
@@ -196,5 +200,17 @@ vault write -field=signed_key ssh/sign/ssh-user public_key=@./foo_rsa.pub > foo_
 ssh -i foo_rsa -i foo_rsa.cert ssh-user@localhost -p 22
 ```
 
+* Confirm it _doesn't_ work otherwise:
 
+If you attempt to SSH with _just_ your private key, we'll get `permission denied`:
+
+```
+ssh -i ./keys/id_rsa ssh-user@localhost -p 22
+```
+
+Likewise, if we force password auth:
+
+```
+ssh -l ssh-user -o PubkeyAuthentication=no -o PasswordAuthentication=yes localhost -p 22
+```
 
